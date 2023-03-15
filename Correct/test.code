@@ -1,0 +1,19 @@
+procedure example and 
+    procedure add( a, b) is
+        record n;
+    begin
+        a := a+b;
+        n := new record[1];
+        n[0] := 10;
+    end
+is
+    record x;
+    record y;
+begin
+    x := new record[1];
+    x[0] := 5;
+    y := new record[1];
+    y[0] := 7;
+    begin add(x, y);
+    out(x);
+end
