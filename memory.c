@@ -14,7 +14,8 @@
 *
 */
 
-void printGC();
+int totalGC();
+void reduceGC();
 
 struct frame{ //call
     char intArray[VNUM][VNAME];
@@ -94,6 +95,7 @@ void initializeParam(char *arg1, char* arg2, char* param1, char* param2){
 
 
 	struct frame *fm = frameArray[fp-1];
+
 	int argLocation1 = searchPrevRecord(arg1, fm);
 	int paramLocaiton1 = searchRecord(param1);
 
@@ -109,6 +111,7 @@ void initializeParam(char *arg1, char* arg2, char* param1, char* param2){
 
 //decrease the frame pointer
 void stackOutFP(){
+	reduceGC();
 	frameArray[fp]=NULL;
 	fp--;
 }
@@ -166,6 +169,10 @@ void store(char* iden, int value) {
 		frameArray[fp]->intValues[int_idx] = value;
 	}
 	if(rec_idx != -1){
+		if(frameArray[fp]->recValues[rec_idx] == NULL){
+			printf("Error: Record %s has not been initialized\n", iden);
+			exit(0);
+		}
 		frameArray[fp]->recValues[rec_idx][1] = value;
 	}
 }
@@ -184,9 +191,12 @@ int recall(char* iden) {
 		value = frameArray[fp]->intValues[int_idx];
 	}
 	if(rec_idx != -1){
+		if(frameArray[fp]->recValues[rec_idx] == NULL){
+			printf("Error: Record %s has not been initialized\n", iden);
+			exit(0);
+		}
 		value = frameArray[fp]->recValues[rec_idx][1];
 	}
-
 	return value;
 }
 
@@ -212,13 +222,16 @@ void storeRec(char* iden, int index, int value) {
 		printf("Error: Index must be natural number\n");
 		exit(0);
 	}
+	if(frameArray[fp]->recValues[iden_idx] == NULL){
+		printf("Error: Record %s has not been initialized\n", iden);
+		exit(0);
+	}
 	if(frameArray[fp]->recValues[iden_idx][0] == index){
 		printf("Error: Index out of range\n");
 		exit(0);
 	}
 	index++;
 	frameArray[fp]->recValues[iden_idx][index]=value;
-
 }
 
 // Read a value from a record variable, from the given index
@@ -241,6 +254,10 @@ int recallRec(char* iden, int index) {
 	}
 	if(index < 0){
 		printf("Error: Index must be natural number\n");
+		exit(0);
+	}
+	if(frameArray[fp]->recValues[iden_idx] == NULL){
+		printf("recall Error: Record %s has not been initialized\n", iden);
 		exit(0);
 	}
 	if(frameArray[fp]->recValues[iden_idx][0] == index){
@@ -270,7 +287,22 @@ void record(char* lhs, char* rhs) {
 		printf("Error: Record %s has not been declared\n", rhs);
 		exit(0);
 	}
-
+	if(frameArray[fp]->recValues[lhs_idx] != NULL){
+		frameArray[fp]->recPointer[lhs_idx]--;
+		if(frameArray[fp]->recValues[rhs_idx] != NULL){
+			frameArray[fp]->recPointer[rhs_idx]++;
+		}
+		if(frameArray[fp]->recPointer[lhs_idx] == 0){
+			printf("gc:%d\n", totalGC());
+		}
+	}else{
+		if(frameArray[fp]->recValues[rhs_idx] != NULL){
+			frameArray[fp]->recPointer[rhs_idx]++;
+		}
+	}
+	if(frameArray[fp]->recValues[rhs_idx] == NULL){
+		frameArray[fp]->recValues[lhs_idx]=NULL;
+	}
 	frameArray[fp]->recValues[lhs_idx]=frameArray[fp]->recValues[rhs_idx];
 }
 
@@ -296,11 +328,12 @@ void allocateRecord(char* iden, int size) {
 	
 	if(frameArray[fp]->recPointer[idx] == 0){
 		frameArray[fp]->recPointer[idx] = 1;	
+		printf("gc:%d\n", totalGC());
 	}
-	printGC();
+	
 }
 
-void printGC(){
+int totalGC(){
 	int i, gc = 0;
 	for(i=0; i<=fp; i++){
 		int j;
@@ -310,7 +343,22 @@ void printGC(){
 			}
 		}
 	}
-	printf("gc:%d\n",gc);
+
+	return gc;
+}
+
+void reduceGC(){
+	int i, currentGC=0, gc=totalGC() ;
+	for(i=0;i<frameArray[fp]->recSize;i++){
+		if(frameArray[fp]->recPointer[i] > 0){
+			currentGC++;
+		}
+	}
+	int j;
+	for(j=0; j < currentGC;j++){
+		gc--;
+		printf("gc:%d\n",gc);
+	}
 }
 
 //print variables and its values

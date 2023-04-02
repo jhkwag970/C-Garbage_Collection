@@ -1,6 +1,7 @@
-procedure example is
-    record x;
-    record y;
+procedure t7 is
+	integer x;
+	integer y;
+	record a;
+	record b;
 begin
-    x := new record [1];
 end

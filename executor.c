@@ -73,6 +73,7 @@ void executeProcedure(){
 	executeDeclSeq(p->ds);
 	memory_init();
 	executeStmtSeq(p->ss);
+	stackOutFP();
 	// printIntValues();
 	// printRecValues();
 }
