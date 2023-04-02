@@ -35,34 +35,13 @@ void executeCall(struct nodeCall* call2);
 void executeFunc(struct nodeFunc *func2, struct nodeParam* param2);
 void executeParam(struct nodeParam *param2);
 
+
 int findFunction(char* id);
-
-void initializeGcCount();
-void initializeStackGcCount();
-void initializeWhileGcCount();
-
-void uninitializeStackGcCount();
-void uninitializeWhileGcCount();
-
-void printGcCount();
-
-void incrementGcCount();
-void incrementStackGcCount();
-void incrementWhileGcCount();
-
-void decreaseGcCount();
-void decreaseStackGcCount();
-void decreaseWhileGcCount();
-
-
 
 extern struct nodeProcedure *p;
 extern struct nodeFunc **funcArray; 
 extern int funcIdx;
 static int indentSize;
-static int gcCount;
-static int stackGcCount;
-static int whileGcCount;
 
 /*
 *
@@ -84,24 +63,16 @@ static void indents(int indent) {
 
 void executeTree(char* inputFile){
 	scanner_open(inputFile);
-	
-	initializeGcCount();
-	uninitializeStackGcCount();
-	uninitializeWhileGcCount();
-
 	initializeFP();
 	initializeSize();
-
 	executeProcedure();
 	scanner_close();
 }
-
 void executeProcedure(){
 
 	executeDeclSeq(p->ds);
 	memory_init();
 	executeStmtSeq(p->ss);
-	decreaseGcCount();
 	// printIntValues();
 	// printRecValues();
 }
@@ -177,8 +148,6 @@ void executeCall(struct nodeCall* call2){
 }
 
 void executeFunc(struct nodeFunc *func2, struct nodeParam* param2){
-	initializeStackGcCount();
-	
 	initializeSize();
 	executeParam(func2->param);
 	executeDeclSeq(func2->ds);
@@ -187,8 +156,6 @@ void executeFunc(struct nodeFunc *func2, struct nodeParam* param2){
 	initializeParam(param2->id1, param2->id2, func2->param->id1, func2->param->id2);
 	
 	executeStmtSeq(func2->ss);
-
-	decreaseStackGcCount();
 	stackOutFP();
 }
 
@@ -216,13 +183,6 @@ void executeAssign(struct nodeAssign *ass2){
 	}else if(ass2->exp != NULL){ //(x)
 		//printf(":=new record[");
 		int size = executeExpr(ass2->exp);
-
-		incrementGcCount();
-		incrementWhileGcCount();
-		incrementStackGcCount();
-
-		printGcCount();
-
 		//printf("]");
 		allocateRecord(ass2->id, size);
 	}else if(ass2->id2 != NULL){   //(x)
@@ -327,9 +287,7 @@ void executeLoop(struct nodeLoop *lp2){
 
 	//printf("while ");
 	while(executeCond(lp2->c)){
-		initializeWhileGcCount();
 		executeStmtSeq(lp2->ss);
-		decreaseWhileGcCount();
 	}
 	//printf(" do\n");
 	
@@ -429,82 +387,4 @@ int findFunction(char* id){
 		}
 	}
 	return -1;
-}
-
-
-//Initialize the gcCount to 0
-void initializeGcCount(){
-	gcCount = 0;
-}
-//Initialize the StackGcCount to 0
-void initializeStackGcCount(){
-	stackGcCount = 0;
-}
-
-//Initialize the whileGcCount to 0
-void initializeWhileGcCount(){
-	whileGcCount = 0;
-}
-
-//Initialize the StackGcCount to -1
-void uninitializeStackGcCount(){
-	stackGcCount = -1;
-}
-
-//Initialize the WhileGcCount to -1
-void uninitializeWhileGcCount(){
-	whileGcCount = -1;
-}
-
-
-//Print current gcCount
-void printGcCount(){
-	printf("gc: %d\n", gcCount);
-}
-
-//Increase gcCount
-void incrementGcCount(){
-	gcCount++;
-}
-
-//Increase StackGcCount
-void incrementStackGcCount(){
-	if(stackGcCount != -1){
-		stackGcCount++;
-	}
-}
-
-//Increase StackGcCount
-void incrementWhileGcCount(){
-	if(whileGcCount != -1){
-		whileGcCount++;
-	}
-}
-
-//Decrease the gcCount to 0
-void decreaseGcCount(){
-	int i;
-	int gcTmp = gcCount;
-	for(i=0; i< gcTmp;i++){
-		gcCount--;
-		printGcCount();
-	}
-}
-
-//Decrease the gcCount by number of stack gcCount
-void decreaseStackGcCount(){
-	int i;
-	for(i=0; i<stackGcCount;i++){
-		gcCount--;
-		printGcCount();
-	}
-}
-
-//Decrease the gcCount by number of while gcCount
-void decreaseWhileGcCount(){
-	int i;
-	for(i=0; i<whileGcCount;i++){
-		gcCount--;
-		printGcCount();
-	}
 }

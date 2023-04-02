@@ -14,12 +14,16 @@
 *
 */
 
+void printGC();
+
 struct frame{ //call
     char intArray[VNUM][VNAME];
 	char recArray[VNUM][VNAME];
 
 	int* intValues;
 	int** recValues; 
+
+	int* recPointer;
 
 	int intSize;
 	int recSize;
@@ -131,6 +135,8 @@ void initializeSize(){
 void memory_init() {
 	frameArray[fp]->intValues = (int*) calloc(frameArray[fp]->intSize, sizeof(int));
 	frameArray[fp]->recValues = (int**) calloc(frameArray[fp]->recSize, sizeof(int));
+
+	frameArray[fp]->recPointer = (int*) calloc(frameArray[fp]->recSize, sizeof(int));
 }
 
 // Handle an integer or record declaration
@@ -286,6 +292,25 @@ void allocateRecord(char* iden, int size) {
 	}
 	frameArray[fp]->recValues[idx]=(int*) calloc(size+1,sizeof(int));
 	frameArray[fp]->recValues[idx][0]=size;
+
+	
+	if(frameArray[fp]->recPointer[idx] == 0){
+		frameArray[fp]->recPointer[idx] = 1;	
+	}
+	printGC();
+}
+
+void printGC(){
+	int i, gc = 0;
+	for(i=0; i<=fp; i++){
+		int j;
+		for(j=0; j<frameArray[i]->recSize;j++){
+			if(frameArray[i]->recPointer[j] > 0){
+				gc++;
+			}
+		}
+	}
+	printf("gc:%d\n",gc);
 }
 
 //print variables and its values
