@@ -26,6 +26,8 @@ Decription:
 
 In the project5, we are asked to implement garbage collection on the executing program. In the program, there are several scopes that the garbage collection is working: when main body, method, or while scope is doen. When each of the scope is finished, the object that is initialized in that scope should be garbage collected by program for the memory purpose. So, in this projection, I implemented the garabage collection and its verifying methods.
 
+This project is cumulative for all core_scanner, parser, interpreter, and function call
+
 Testing:
 
 I tired with several scopes and objects in the each of the scope that I mentioned in description. Then, I changed back and forth between scopes to see if the garbage collection is correctly recognize the current scope is done to initiate the garabage collect the object in the scope.
