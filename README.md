@@ -1,4 +1,4 @@
-# Garbage Collection
+# C-Garbage Collection
 C for Garbage Colleciton
 
 Jiyong Kwag
